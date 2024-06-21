@@ -4,6 +4,8 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.progressbar import ProgressBar
+from kivy.config import Config
+from kivy.core.window import Window
 import requests
 import re
 import subprocess
@@ -12,14 +14,19 @@ import sys
 import os
 import time
 
+Window.size = (600, 200)
+
 class MyApp(App):
     def build(self):
+        self.title = 'Antonioli Desktop Parser'
+        self.icon = 'logo.png'
         root = BoxLayout(orientation='vertical')
 
         # Labels for indicators
         self.cookies_valid_label = Label(text='Cookies валидны: ?', size_hint=(1, None), height=30)
         self.connection_label = Label(text='Подключение: ?', size_hint=(1, None), height=30)
         self.items_found_label = Label(text='Найдено возможных артикулов: ?', size_hint=(1, None), height=30)
+        self.parser_status_label = Label(text='Статус парсера: ?', size_hint=(1, None), height=30)
 
         # Main layout
         main_layout = BoxLayout(orientation='horizontal', padding=10, spacing=10)
@@ -43,18 +50,14 @@ class MyApp(App):
         indicators_column.add_widget(self.cookies_valid_label)
         indicators_column.add_widget(self.connection_label)
         indicators_column.add_widget(self.items_found_label)
+        indicators_column.add_widget(self.parser_status_label)
 
         left_column.add_widget(indicators_column)
 
         # Add columns to main layout
         main_layout.add_widget(left_column)
         main_layout.add_widget(right_column)
-
-        # Status bar
-        self.status_bar = ProgressBar(max=100, value=0, size_hint=(1, None), height=30)
         root.add_widget(main_layout)
-        root.add_widget(self.status_bar)
-
         return root
 
     def start(self, instance):
@@ -77,28 +80,6 @@ class MyApp(App):
                     stderr=subprocess.PIPE,
                     text=True
                 )
-                try:
-                    while True:
-                        retcode = process.poll()
-                        if retcode is not None:
-                            # Процесс завершился
-                            break
-                        print("Сабпроцесс все еще работает...")
-                        time.sleep(60)  # Ожидаем 60 секунд перед следующей проверкой
-
-                    # Читаем вывод сабпроцесса
-                    stdout, stderr = process.communicate()
-
-                    # Выводим результат выполнения команды сабпроцесса
-                    print("STDOUT:\n", stdout.strip())
-                    print("STDERR:\n", stderr.strip())
-
-                except KeyboardInterrupt:
-                    print("Основной процесс был прерван. Завершаем сабпроцесс...")
-                    process.terminate()
-                    stdout, stderr = process.communicate()
-                    print("STDOUT:\n", stdout.strip())
-                    print("STDERR:\n", stderr.strip())
             else:
                 self.cookies_valid_label.text = "Cookies валидны: Не удалось подключиться"
                 self.connection_label.text = "Подключение: Не успешно"

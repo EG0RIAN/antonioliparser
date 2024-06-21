@@ -11,15 +11,12 @@ from requests_html import HTMLSession
 data_json = sys.argv[1]
 data = json.loads(data_json)
 
-start = datetime.datetime.now()
-print('Время старта: ' + str(start))
-
 headers = {
     "Cookie": data
 }
 
-completed_file = 'completed_urls.txt'
-csv_filename = 'product_data.csv'
+completed_file = os.path.expanduser("~/Desktop/completed_urls.txt")
+csv_filename = os.path.expanduser("~/Desktop/product_data.csv")
 
 # Read completed URLs from file
 if os.path.exists(completed_file):
@@ -195,8 +192,3 @@ with open(csv_filename, 'a', newline='', encoding='utf-8') as csvfile:
         except Exception as e:
             print(f"Error processing product {product}: {str(e)}")
             continue
-
-finish = datetime.datetime.now()
-print('Время окончания: ' + str(finish))
-print(f"All data has been successfully written to '{csv_filename}'.")
-print('Время работы: ' + str(finish - start))
